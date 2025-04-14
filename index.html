@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نتائج BAC/BEM - الروجي الناري</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #fff9ec, #e6f3e6);
+      color: #222;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      transition: background 0.5s;
+    }
+    body.night-mode {
+      background: linear-gradient(135deg, #1a1a1a, #3a3a3a);
+      color: #ddd;
+    }
+    body.happy {
+      background: linear-gradient(135deg, #87ceeb, #ffd700);
+    }
+    body.anxious {
+      background: linear-gradient(135deg, #d3d3d3, #a9a9a9);
+    }
+    body.excited {
+      background: linear-gradient(135deg, #ff4500, #ffd700);
+      animation: pulseBackground 2s infinite;
+    }
+    header {
+      background: linear-gradient(to right, #009739, #ffffff, #ce1126);
+      color: #222;
+      padding: 15px;
+      font-size: 1.6em;
+      font-weight: bold;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    main {
+      flex: 1;
+      padding: 20px;
+      position: relative;
+    }
+    .input-field, select, button {
+      padding: 12px;
+      margin: 8px;
+      font-size: 1em;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+    }
+    .input-field, select {
+      width: 90%;
+      max-width: 350px;
+      border: 2px solid #ce1126;
+    }
+    button {
+      background-color: #009739;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, background-color 0.3s;
+    }
+    button:hover {
+      background-color: #00732e;
+      transform: scale(1.05);
+    }
+    button.bomb {
+      background: linear-gradient(45deg, #ff0000, #ff5555);
+      padding: 15px 30px;
+      font-size: 1.2em;
+      color: #fff;
+      box-shadow: 0 0 10px #ff0000;
+      animation: bombGlow 1s infinite;
+    }
+    #result {
+      font-size: 2em;
+      margin: 20px 0;
+      color: #007f5f;
+      animation: fadeIn 1s ease-in;
+    }
+    .success { animation: dance 1s ease-in; }
+    .fail { animation: fall 0.5s ease-in; }
+    .meme-box, .weather-box, .success-meter {
+      font-size: 1.1em;
+      background: #fdfcdc;
+      border: 2px dashed #ce1126;
+      margin: 15px auto;
+      padding: 15px;
+      border-radius: 12px;
+      max-width: 500px;
+    }
+    #magnetBox, #coffeeBox, #shakshoukaBox, #memeChallenge, #chatBox {
+      margin: 20px auto;
+      max-width: 500px;
+      padding: 15px;
+      background: #f4f4f4;
+      border-radius: 12px;
+    }
+    #magnetResult, #coffeeResult, #shakshoukaResult, #chatMessages, #memeChallengeResult {
+      font-size: 1.2em;
+      color: #ce1126;
+      margin-top: 10px;
+    }
+    #welcomeMessage {
+      font-size: 1.3em;
+      color: #d62828;
+      margin: 15px 0;
+      animation: pulse 2s infinite;
+    }
+    #certificatePreview {
+      margin: 20px auto;
+      max-width: 400px;
+      display: none;
+    }
+    #certificatePreview img {
+      width: 100%;
+      border: 2px solid #ffd700;
+      border-radius: 12px;
+    }
+    #qrCode {
+      margin: 10px auto;
+      max-width: 150px;
+    }
+    #commentPopup, #memePopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      z-index: 100;
+    }
+    #commentPopup input, #memePopup input {
+      padding: 10px;
+      margin: 10px;
+      width: 90%;
+      border-radius: 10px;
+      border: 2px solid #ce1126;
+    }
+    #commentPopup button, #memePopup button {
+      margin: 5px;
+    }
+    #successMeterCanvas {
+      margin: 10px auto;
+      display: block;
+    }
+    @keyframes bombGlow {
+      0% { box-shadow: 0 0 10px #ff0000; }
+      50% { box-shadow: 0 0 20px #ff5555; }
+      100% { box-shadow: 0 0 10px #ff0000; }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes dance {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px) rotate(5deg); }
+    }
+    @keyframes fall {
+      0% { transform: translateY(0); }
+      50% { transform: translateY(10px); }
+      100% { transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    @keyframes pulseBackground {
+      0% { background: linear-gradient(135deg, #ff4500, #ffd700); }
+      50% { background: linear-gradient(135deg, #ffd700, #ff4500); }
+      100% { background: linear-gradient(135deg, #ff4500, #ffd700); }
+    }
+    @media (max-width: 600px) {
+      header {
+        font-size: 1.4em;
+        padding: 12px;
+      }
+      .input-field, select, button {
+        width: 95%;
+        font-size: 0.9em;
+      }
+      #result {
+        font-size: 1.6em;
+      }
+      .meme-box, .weather-box, #magnetBox, #coffeeBox, #shakshoukaBox, #memeChallenge, #chatBox {
+        width: 90%;
+      }
+      #qrCode {
+        max-width: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    الروجي الناري لنتائج الباك والبيام 🇩🇿🔥
+  </header>
+  <main>
+    <div id="welcomeMessage"></div>
+
+    <!-- Mood Selector -->
+    <div id="moodSelector">
+      <h3>وش حالك؟ 😎</h3>
+      <select id="mood" class="input-field" onchange="changeMood()">
+        <option value="none">اختر مزاجك</option>
+        <option value="happy">مرتاح</option>
+        <option value="anxious">قلق</option>
+        <option value="excited">متحمس</option>
+      </select>
+    </div>
+
+    <!-- Magnet Box -->
+    <div id="magnetBox" style="display: none;">
+      <h3>مغناطيس النتائج 🧲</h3>
+      <div id="magnetResult"></div>
+    </div>
+
+    <!-- Coffee Box -->
+    <div id="coffeeBox" style="display: none;">
+      <h3>قهوة النجاح ☕</h3>
+      <button onclick="drinkCoffee()">اشرب قهوتك الافتراضية!</button>
+      <div id="coffeeResult"></div>
+    </div>
+
+    <!-- Shakshouka Box -->
+    <div id="shakshoukaBox" style="display: none;">
+      <h3>صندوق الشخشوخة السحري 🥙</h3>
+      <button onclick="openShakshouka()">افتح الصندوق!</button>
+      <div id="shakshoukaResult"></div>
+    </div>
+
+    <!-- Meme Challenge -->
+    <div id="memeChallenge" style="display: none;">
+      <h3>تحدي الحومة: ميم اليوم 😜</h3>
+      <button onclick="showMemePopup()">شارك ميمك!</button>
+      <div id="memeChallengeResult"></div>
+    </div>
+
+    <!-- Chat Box -->
+    <div id="chatBox">
+      <h3>دردشة مع روجي الذكي 🤖</h3>
+      <input type="text" id="chatInput" class="input-field" placeholder="جاوب روجي... ذاكرت ولا لا؟">
+      <button onclick="sendChat()">أرسل</button>
+      <div id="chatMessages"></div>
+    </div>
+
+    <!-- Success Meter -->
+    <div class="success-meter" id="successMeter" style="display: none;">
+      <h3>مؤشر النجاح الذكي 📊</h3>
+      <button onclick="startSuccessMeter()">قيّس نجاحك!</button>
+      <canvas id="successMeterCanvas" width="300" height="150"></canvas>
+    </div>
+
+    <!-- Input Fields -->
+    <input type="text" id="fullName" class="input-field" placeholder="الاسم الكامل">
+    <input type="text" id="regNumber" class="input-field" placeholder="رقم التسجيل">
+    <input type="password" id="password" class="input-field" placeholder="كلمة السر">
+    <select id="gender" class="input-field">
+      <option value="ذكر">ذكر</option>
+      <option value="أنثى">أنثى</option>
+    </select>
+    <input type="text" id="birthDate" class="input-field" placeholder="تاريخ الميلاد (YYYY/MM/DD)" pattern="\d{4}/\d{2}/\d{2}">
+    <input type="text" id="wilayaSearch" class="input-field" placeholder="ابحث عن ولايتك..." oninput="autoSelectWilaya()">
+    <select id="wilayaSelect" class="input-field"></select>
+    <div id="captchaContainer"></div>
+    <input type="number" id="captchaAnswer" class="input-field" placeholder="حلّ العملية ولا يزعل الروجي!">
+
+    <button class="bomb" onclick="playBombSound(); startCountdown()">شوف النتيجة 💣</button>
+    <div id="loading"></div>
+    <div id="countdown"></div>
+    <div id="result"></div>
+    <div class="meme-box" id="meme"></div>
+    <div class="weather-box" id="weather"></div>
+    <div id="certificatePreview"></div>
+    <div id="qrCode"></div>
+
+    <!-- Comment Popup -->
+    <div id="commentPopup">
+      <h3>أضف تعليق لشهادتك:</h3>
+      <input type="text" id="userComment" placeholder="مثل: نجحت وهزّت الحومة!">
+      <button onclick="saveComment()">حفّظ التعليق</button>
+      <button onclick="suggestComment()">اقترح تعليق</button>
+    </div>
+
+    <!-- Meme Popup -->
+    <div id="memePopup">
+      <h3>شارك ميمك اليومي:</h3>
+      <input type="text" id="userMeme" placeholder="مثل: الفلسفة قالت نراك السنة الجاية!">
+      <button onclick="submitMeme()">أرسل الميم</button>
+    </div>
+
+    <button onclick="showCommentPopup()">نزّل شهادتك الـ VIP 🏆</button>
+    <button onclick="downloadMemeCertificate()">نزّل شهادة الميمز 😜</button>
+    <button onclick="shareCertificate()">شارك شهادتك 📤</button>
+    <div class="share-buttons">
+      <button onclick="shareResult('whatsapp')">واتساب 📲</button>
+      <button onclick="shareResult('instagram')">إنستغرام 📸</button>
+      <button onclick="makeHomaStory()">صنع ستوري الحومة 📹</button>
+    </div>
+  </main>
+
+  <audio id="bombSound" src="https://freesound.org/data/previews/66/66962_295760-lq.mp3"></audio>
+  <audio id="successSound" src="https://freesound.org/data/previews/171/171671_2438948-lq.mp3"></audio>
+  <audio id="failSound" src="https://freesound.org/data/previews/208/208811_3264796-lq.mp3"></audio>
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <script>
+    const wilayasNames = ["أدرار", "الشلف", "الأغواط", "أم البواقي", "باتنة", "بجاية", "بسكرة", "بشار", "البليدة", "البويرة",
+      "تمنراست", "تبسة", "تلمسان", "تيارت", "تيزي وزو", "الجزائر", "الجلفة", "جيجل", "سطيف", "سعيدة",
+      "سكيكدة", "سيدي بلعباس", "عنابة", "قالمة", "قسنطينة", "المدية", "مستغانم", "المسيلة", "معسكر", "ورقلة",
+      "وهران", "البيض", "إليزي", "برج بوعريريج", "بومرداس", "الطارف", "تندوف", "تيسمسيلت", "الوادي", "خنشلة",
+      "سوق أهراس", "تيبازة", "ميلة", "عين الدفلى", "النعامة", "عين تموشنت", "غرداية", "غليزان"];
+
+    const memes = {
+      male: [
+        { min: 16, wilaya: "وهران", text: "يا زين! معدلك يستاهل رقصة في كافي وهران! 💃🔥" },
+        { min: 16, wilaya: "قسنطينة", text: "معدلك يستحق جسر معلق في قسنطينة! 🌉🌟" },
+        { min: 16, wilaya: "default", text: "يا بطل! معدلك هزّ الحومة والكافي! 🌟☕" },
+        { min: 12, wilaya: "default", text: "نجحت! معدلك يستاهل قهوة في الكافي! 😎☕" },
+        { min: 10, wilaya: "default", text: "ناجح! بصح زيد شوي المرة الجاية! 😉📚" },
+        { min: 0, wilaya: "default", text: "ما صار والو! السنة الجاية تجيبها! 🙏📓" }
+      ],
+      female: [
+        { min: 16, wilaya: "وهران", text: "يا بنت الحومة! معدلك نار، ارقصي في كافي وهران! 💃🔥" },
+        { min: 16, wilaya: "قسنطينة", text: "ملكة قسنطينة! معدلك يستاهل جسر معلق! 🌉👑" },
+        { min: 16, wilaya: "default", text: "يا زينة! معدلك خلّى الحومة ترقص! 🌟💃" },
+        { min: 12, wilaya: "default", text: "نجحتي! معدلك يستاهل شاي بالنعناع! 😎🍵" },
+        { min: 10, wilaya: "default", text: "ناجحة! زيدي تألقي المرة الجاية! 😉📚" },
+        { min: 0, wilaya: "default", text: "ما صار والو! رجعي أقوى السنة الجاية! 🙏📓" }
+      ]
+    };
+
+    const weatherForecasts = [
+      { min: 16, text: "شمس ساطعة في حياتك، الحومة تحتفل! ☀️🎉" },
+      { min: 12, text: "غيوم خفيفة، بصح القهوة تعوّض! ☁️☕" },
+      { min: 10, text: "جو هادي، بصح زيد شوي جهد! 🌤️📚" },
+      { min: 0, text: "عاصفة فلسفية، بصح الشاي بالنعناع يهدّي! 🌪️🍵" }
+    ];
+
+    const shakshoukaRewards = [
+      { min: 16, text: "شخشوخة VIP مع كسكسي من الحومة! 🥙🌟" },
+      { min: 12, text: "قهوة مجانية في كافي الروجي! ☕😋" },
+      { min: 10, text: "شاي بالنعناع يعطيك الطاقة! 🍵💪" },
+      { min: 0, text: "دفتر جديد باش ترجع أقوى! 📓🙏" }
+    ];
+
+    const chatResponses = [
+      { question: "ذاكرت", response: "يا زين! ذاكرت؟ أكيد القهوة ساعدتك! ☕😎" },
+      { question: "كافي", response: "أوووه، كنت في الكافي؟ المعدل يحكي الحقيقة! 😜🥙" },
+      { question: "فلسفة", response: "الفلسفة؟ هذي عدوة الروجي! رجع ذاكر وهزمها! 🤯📚" },
+      { default: "هههه، واش قلت؟ قول ثاني وخلّيني نضحك! 😂🇩🇿" }
+    ];
+
+    const welcomeMessages = [
+      "يا زين، جاهز تهزّ الحومة بمعدلك؟ 🔥😎",
+      "الروجي الناري يستناك! قلبك قوي؟ 🇡🇹💥",
+      "حوس ولا عينيك، النتيجة راهي جاية! 🚀☕",
+      "معدلك يحدد مصير الكافي... جاهز؟ 😈🥙"
+    ];
+
+    let userComment = "";
+    let successMeterAnswers = {};
+    let certificateDataUrl = "";
+    let qrCodeUrl = "";
+
+    function populateWilayas() {
+      const select = document.getElementById("wilayaSelect");
+      select.innerHTML = "<option value='' disabled selected>اختار ولايتك</option>";
+      wilayasNames.forEach((w, i) => {
+        const opt = document.createElement("option");
+        opt.value = w;
+        opt.textContent = `${i + 1} - ${w}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function autoSelectWilaya() {
+      const search = document.getElementById("wilayaSearch").value.toLowerCase().trim();
+      const select = document.getElementById("wilayaSelect");
+      select.innerHTML = "<option value='' disabled selected>اختار ولايتك</option>";
+      let matchedWilaya = null;
+      wilayasNames.forEach((w, i) => {
+        if (w.toLowerCase().includes(search)) {
+          const opt = document.createElement("option");
+          opt.value = w;
+          opt.textContent = `${i + 1} - ${w}`;
+          select.appendChild(opt);
+          if (w.toLowerCase() === search) {
+            matchedWilaya = w;
+          }
+        }
+      });
+      if (matchedWilaya) {
+        select.value = matchedWilaya;
+      }
+    }
+
+    function validateBirthDate(date) {
+      const regex = /^\d{4}\/\d{2}\/\d{2}$/;
+      return regex.test(date);
+    }
+
+    function generateCaptcha() {
+      const n1 = Math.floor(Math.random() * 21);
+      const n2 = Math.floor(Math.random() * 21);
+      window.correctAnswer = n1 + n2;
+      document.getElementById("captchaContainer").innerText = `حلّ: ${n1} + ${n2} = ؟ ولا يزعل الروجي! 😱`;
+    }
+
+    function playBombSound() {
+      document.getElementById("bombSound").play();
+    }
+
+    function changeMood() {
+      const mood = document.getElementById("mood").value;
+      document.body.classList.remove("happy", "anxious", "excited");
+      if (mood === "happy") {
+        document.body.classList.add("happy");
+        document.getElementById("welcomeMessage").innerText = "مرتاح؟ معدلك يستاهل شخشوخة! 🥙😎";
+      } else if (mood === "anxious") {
+        document.body.classList.add("anxious");
+        document.getElementById("welcomeMessage").innerText = "قلقان؟ اهدى، القهوة تحلّ كل شي! ☕😅";
+      } else if (mood === "excited") {
+        document.body.classList.add("excited");
+        document.getElementById("welcomeMessage").innerText = "متحمس؟ الحومة كلها تستناك! 🔥🇩🇿";
+      }
+    }
+
+    function startCountdown() {
+      const fullName = document.getElementById("fullName").value;
+      const regNumber = document.getElementById("regNumber").value;
+      const password = document.getElementById("password").value;
+      const wilaya = document.getElementById("wilayaSelect").value;
+      const birthDate = document.getElementById("birthDate").value;
+      const userAnswer = parseInt(document.getElementById("captchaAnswer").value);
+
+      if (!fullName || !regNumber || !password || !wilaya) {
+        alert("يا روجي، عبّي الاسم، رقم التسجيل، كلمة السر، والولاية! 😤🔥");
+        return;
+      }
+      if (birthDate && !validateBirthDate(birthDate)) {
+        alert("التاريخ لازم يكون YYYY/MM/DD! موش كيما الكاشي! 📅😜");
+        return;
+      }
+      if (userAnswer !== window.correctAnswer) {
+        alert("الكاباتشا غلط! حوس ولا عينيك وحاول ثاني! 👀😈");
+        generateCaptcha();
+        document.getElementById("captchaAnswer").value = "";
+        return;
+      }
+
+      document.getElementById("loading").innerText = "المغناطيس يمتص النتيجة... 😅🧲";
+      setTimeout(() => {
+        document.getElementById("loading").innerText = "";
+        let time = 5;
+        document.getElementById("countdown").innerText = "النتيجة تبان بعد 5 ثواني... جاهز؟ ⏳😎";
+        const interval = setInterval(() => {
+          time--;
+          if (time > 0) {
+            document.getElementById("countdown").innerText = `باقي ${time} ثواني...`;
+          } else {
+            clearInterval(interval);
+            document.getElementById("countdown").innerText = "";
+            showResult();
+            document.getElementById("magnetBox").style.display = "block";
+            document.getElementById("coffeeBox").style.display = "block";
+            document.getElementById("shakshoukaBox").style.display = "block";
+            document.getElementById("memeChallenge").style.display = "block";
+            document.getElementById("successMeter").style.display = "block";
+            if (parseFloat(document.getElementById("result").innerText.split(": ")[1]) >= 10) {
+              document.getElementById("successSound").play();
+              awardReward();
+            } else {
+              document.getElementById("failSound").play();
+            }
+          }
+        }, 1000);
+      }, 1500);
+    }
+
+    function showResult() {
+      const grade = (Math.random() * 20).toFixed(2);
+      const name = document.getElementById("fullName").value || "طالب مجهول";
+      const gender = document.getElementById("gender").value;
+      const wilaya = document.getElementById("wilayaSelect").value;
+
+      document.getElementById("result").innerText = `يا ${name}، معدلك: ${grade} 🎓🔥`;
+      document.getElementById("result").classList.add(grade >= 10 ? "success" : "fail");
+      document.getElementById("meme").innerText = getMeme(parseFloat(grade), gender, wilaya);
+      document.getElementById("weather").innerText = getWeather(parseFloat(grade));
+      document.getElementById("magnetResult").innerText = parseFloat(grade) >= 10
+        ? "المغناطيس هزّ الحومة! نجحت وخلّيت الكافي يرقص! 🧲🎉"
+        : "المغناطيس حاول، بصح الفلسفة قاومت! جرب ثاني! 🧲😅";
+    }
+
+    function getMeme(grade, gender, wilaya) {
+      const memeList = memes[gender.toLowerCase()];
+      let selectedMeme = memeList.find(m => grade >= m.min && m.wilaya === wilaya);
+      if (!selectedMeme) {
+        selectedMeme = memeList.find(m => grade >= m.min && m.wilaya === "default");
+      }
+      return selectedMeme.text;
+    }
+
+    function getWeather(grade) {
+      const forecast = weatherForecasts.find(f => grade >= f.min);
+      return `توقعات الطقس النفسي: ${forecast.text}`;
+    }
+
+    function drinkCoffee() {
+      const grade = parseFloat(document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || 0);
+      const coffeeText = grade >= 10
+        ? "مبروك! هذي قهوتك الافتراضية، نجحت وهزّت الحومة! ☕😎"
+        : "ما صار والو، خذ شاي بالنعناع وارجع أقوى! 🍵💪";
+      document.getElementById("coffeeResult").innerText = coffeeText;
+    }
+
+    function openShakshouka() {
+      const grade = parseFloat(document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || 0);
+      const reward = shakshoukaRewards.find(r => grade >= r.min);
+      document.getElementById("shakshoukaResult").innerText = `مبروك! ربحت: ${reward.text}`;
+    }
+
+    function startSuccessMeter() {
+      successMeterAnswers = {};
+      const questions = [
+        "كم ساعة ذاكرت؟ (0-10)",
+        "الفلسفة ولا الرياضيات خانتك؟ (فلسفة/رياضيات/لا)",
+        "كم قهوة شربت؟ (0-5)"
+      ];
+      let currentQuestion = 0;
+
+      function askQuestion() {
+        if (currentQuestion < questions.length) {
+          const answer = prompt(questions[currentQuestion]);
+          successMeterAnswers[currentQuestion] = answer;
+          currentQuestion++;
+          askQuestion();
+        } else {
+          drawSuccessMeter();
+        }
+      }
+      askQuestion();
+    }
+
+    function drawSuccessMeter() {
+      const canvas = document.getElementById("successMeterCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#ce1126";
+      ctx.font = "14px Cairo";
+      const studyHours = parseInt(successMeterAnswers[0]) || 0;
+      const subject = successMeterAnswers[1] || "لا";
+      const coffee = parseInt(successMeterAnswers[2]) || 0;
+      const score = (studyHours * 10 + coffee * 5 - (subject !== "لا" ? 20 : 0));
+      ctx.fillText(`مؤشر النجاح: ${score}%`, 20, 20);
+      ctx.fillRect(20, 30, score * 2, 20);
+      ctx.fillStyle = "#009739";
+      ctx.fillText(`تعليق: ${score > 50 ? "80% قهوة، 20% دراسة! ☕😂" : "حاول ما تبقاش في الكافي! 😜"}`, 20, 70);
+    }
+
+    function showMemePopup() {
+      document.getElementById("memePopup").style.display = "block";
+      document.getElementById("userMeme").value = "";
+    }
+
+    function submitMeme() {
+      const meme = document.getElementById("userMeme").value || "ميم مجهول!";
+      document.getElementById("memeChallengeResult").innerText = `ميم اليوم: ${meme} 😜`;
+      document.getElementById("memePopup").style.display = "none";
+    }
+
+    function sendChat() {
+      const input = document.getElementById("chatInput").value.toLowerCase();
+      let response = chatResponses.find(r => input.includes(r.question)) || { response: chatResponses[chatResponses.length - 1].default };
+      document.getElementById("chatMessages").innerText = `روجي الذكي: ${response.response}`;
+      document.getElementById("chatInput").value = "";
+    }
+
+    function awardReward() {
+      const grade = parseFloat(document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || 0);
+      if (grade >= 12) {
+        alert("مبروك! ربحت خلفية كافي وهران الرقمية! 😎☕");
+      }
+    }
+
+    function showCommentPopup() {
+      document.getElementById("commentPopup").style.display = "block";
+      document.getElementById("userComment").value = "";
+    }
+
+    function saveComment() {
+      userComment = document.getElementById("userComment").value || "نجحت وهزّت الحومة!";
+      document.getElementById("commentPopup").style.display = "none";
+      previewCertificate();
+    }
+
+    function suggestComment() {
+      const suggestions = [
+        "نجحت وهزّت الحومة! 😎🔥",
+        "القهوة هي سر النجاح! ☕😜",
+        "معدلي يرقّص الكافي! 💃🇩🇿",
+        "الحمد لله، جبتها! 🙏🥙"
+      ];
+      document.getElementById("userComment").value = suggestions[Math.floor(Math.random() * suggestions.length)];
+    }
+
+    function generateQRCode(url) {
+      document.getElementById("qrCode").innerHTML = "";
+      const qrCodeCanvas = document.createElement("canvas");
+      document.getElementById("qrCode").appendChild(qrCodeCanvas);
+      QRCode.toCanvas(qrCodeCanvas, url, { width: 150, margin: 1 }, function (error) {
+        if (error) console.error(error);
+      });
+      qrCodeUrl = url;
+    }
+
+    function previewCertificate() {
+      const grade = document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || "غير معروف";
+      const name = document.getElementById("fullName").value || "طالب مجهول";
+      const story = parseFloat(grade) >= 10
+        ? `في حومة بعيدة، ${name} هزم الباك بشخشوخة وقلم! 🥙✍️`
+        : `في كافي مليح، ${name} قاوم الفلسفة ورجع أقوى! ☕💪`;
+      const resultId = Math.random().toString(36).substring(2, 10);
+      const resultUrl = `https://rougi.dz/result/${resultId}`;
+      const resultData = encodeURIComponent(JSON.stringify({ name, grade, comment: userComment, story }));
+
+      // Simulating storing result data (in real app, use backend)
+      localStorage.setItem(resultId, resultData);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 350; // Increased height for QR Code
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, 400, 350);
+      ctx.strokeStyle = "#ffd700";
+      ctx.lineWidth = 5;
+      ctx.strokeRect(10, 10, 380, 330);
+      ctx.fillStyle = "#ffd700";
+      ctx.font = "bold 20px Cairo";
+      ctx.fillText("شهادة روجي ملحمية 🏆", 20, 50);
+      ctx.fillStyle = "#ce1126";
+      ctx.font = "16px Cairo";
+      ctx.fillText(`للروجي: ${name}`, 20, 80);
+      ctx.fillText(`المعدل: ${grade}`, 20, 110);
+      ctx.fillText(`القصة: ${story}`, 20, 140);
+      ctx.fillText(`تعليقك: ${userComment}`, 20, 170);
+      ctx.fillText("مصدّق من الحومة 🇩🇿", 20, 200);
+
+      // Add QR Code to certificate
+      const qrCanvas = document.createElement("canvas");
+      QRCode.toCanvas(qrCanvas, resultUrl, { width: 80, margin: 1 }, function (error) {
+        if (error) console.error(error);
+        ctx.drawImage(qrCanvas, 280, 230, 80, 80);
+        certificateDataUrl = canvas.toDataURL();
+        document.getElementById("certificatePreview").innerHTML = `<img src="${certificateDataUrl}" alt="معاينة الشهادة">`;
+        document.getElementById("certificatePreview").style.display = "block";
+        const link = document.createElement("a");
+        link.download = "certificate_rougi.png";
+        link.href = certificateDataUrl;
+        link.innerText = "تحميل الشهادة 🏆";
+        link.style.display = "block";
+        link.style.margin = "10px auto";
+        link.style.padding = "10px";
+        link.style.background = "#009739";
+        link.style.color = "#fff";
+        link.style.textDecoration = "none";
+        link.style.borderRadius = "10px";
+        document.getElementById("certificatePreview").appendChild(link);
+        generateQRCode(resultUrl);
+      });
+    }
+
+    function downloadMemeCertificate() {
+      const grade = parseFloat(document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || 0);
+      const name = document.getElementById("fullName").value || "طالب مجهول";
+      const memeText = grade >= 10
+        ? "إنتبه! جبت أكثر من 10! 😎🇩🇿"
+        : "خطأ! الفلسفة تقول نراك السنة الجاية! 😜🤯";
+      const resultId = Math.random().toString(36).substring(2, 10);
+      const resultUrl = `https://rougi.dz/result/${resultId}`;
+      const resultData = encodeURIComponent(JSON.stringify({ name, grade, meme: memeText }));
+
+      // Simulating storing result data
+      localStorage.setItem(resultId, resultData);
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 350;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, 400, 350);
+      ctx.fillStyle = "#ce1126";
+      ctx.font = "bold 20px Cairo";
+      ctx.fillText("شهادة الميمز النارية 😜", 20, 50);
+      ctx.fillStyle = "#009739";
+      ctx.font = "16px Cairo";
+      ctx.fillText(`للروجي: ${name}`, 20, 80);
+      ctx.fillText(`المعدل: ${grade}`, 20, 110);
+      ctx.fillText(memeText, 20, 140);
+      ctx.fillText("#روجي_الباك", 20, 170);
+
+      // Add QR Code to meme certificate
+      const qrCanvas = document.createElement("canvas");
+      QRCode.toCanvas(qrCanvas, resultUrl, { width: 80, margin: 1 }, function (error) {
+        if (error) console.error(error);
+        ctx.drawImage(qrCanvas, 280, 230, 80, 80);
+        const dataUrl = canvas.toDataURL();
+        const link = document.createElement("a");
+        link.download = "meme_certificate.png";
+        link.href = dataUrl;
+        link.click();
+        generateQRCode(resultUrl);
+      });
+    }
+
+    function shareCertificate() {
+      if (!certificateDataUrl) {
+        alert("ولّي عبّي التعليق ونزّل الشهادة أولًا! 😜🏆");
+        return;
+      }
+      const shareText = `يا الحومة، شوفو معدلي! 😎🔥 ${qrCodeUrl} #روجي_الباك`;
+      if (navigator.share) {
+        const shareData = {
+          title: "شهادة الروجي النارية",
+          text: shareText,
+          url: qrCodeUrl,
+          files: []
+        };
+        fetch(certificateDataUrl)
+          .then(response => response.blob())
+          .then(blob => {
+            const file = new File([blob], "certificate_rougi.png", { type: "image/png" });
+            shareData.files.push(file);
+            navigator.share(shareData).catch(error => console.error("Error sharing:", error));
+          });
+      } else {
+        alert("انسخ النص وشارك الشهادة يدويًا! 😅");
+        navigator.clipboard.writeText(`${shareText} (حفّظ الصورة من التحميل)`);
+      }
+    }
+
+    function shareResult(platform) {
+      const gradeText = document.getElementById("result").innerText;
+      const memeText = document.getElementById("meme").innerText;
+      const commentText = userComment || "نجحت وهزّت الحومة!";
+      const fullText = `${gradeText} - ${memeText} 💬 ${commentText} 🔥🇩🇿`;
+      let url = "";
+      if (platform === "whatsapp") {
+        url = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
+      } else if (platform === "instagram") {
+        alert("انسخ النص وشاركه في ستوري إنستغرام! 😎");
+        navigator.clipboard.writeText(fullText);
+        return;
+      }
+      window.open(url, "_blank");
+    }
+
+    function makeHomaStory() {
+      const grade = document.getElementById("result").innerText.split(": ")[1]?.split(" ")[0] || "غير معروف";
+      const comment = userComment || "نجحت وهزّت الحومة!";
+      const canvas = document.createElement("canvas");
+      canvas.width = 400;
+      canvas.height = 600;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, 400, 600);
+      ctx.fillStyle = "#ce1126";
+      ctx.font = "bold 24px Cairo";
+      ctx.fillText("روجي الباك 🇩🇿", 20, 50);
+      ctx.fillStyle = "#009739";
+      ctx.font = "20px Cairo";
+      ctx.fillText(`المعدل: ${grade}`, 20, 100);
+      ctx.fillText(`التعليق: ${comment}`, 20, 140);
+      ctx.fillStyle = "#ffd700";
+      ctx.font = "18px Cairo";
+      ctx.fillText("#روجي_الباك #الحومة", 20, 180);
+      const link = document.createElement("a");
+      link.download = "homa_story.png";
+      link.href = canvas.toDataURL();
+      link.click();
+      alert("حفّظ الصورة وشاركها في ستوري إنستغرام! 😎📸");
+    }
+
+    function showWelcomeMessage() {
+      const message = welcomeMessages[Math.floor(Math.random() * welcomeMessages.length)];
+      document.getElementById("welcomeMessage").innerText = message;
+    }
+
+    window.onload = () => {
+      populateWilayas();
+      generateCaptcha();
+      showWelcomeMessage();
+    };
+  </script>
+</body>
+</html>
